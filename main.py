@@ -11,13 +11,20 @@ for i in range(50):
     output_file = f'output_{i}.yuv'
     with open(input_file, 'rb') as f_in, open(output_file, 'wb') as f_out:
         frame_number = 0
+        i_frames = []
         while True:
             frame_data = f_in.read(width * height * 3 // 2)  # 读取一帧数据
             if not frame_data:
                 break
-            if frame_number % frame_rate != 0:  # 判断是否为I帧，非I帧则写入输出文件
-                f_out.write(frame_data)
+            if frame_number % frame_rate == 0:  # 判断是否为I帧
+                i_frames.append(frame_number)
+            f_out.write(frame_data)  # 写入帧数据
             frame_number += 1
+
+        if len(i_frames) > 0:
+            frame_to_remove = random.choice(i_frames)  # 随机选择一个I帧进行删除
+            f_out.seek((frame_to_remove // frame_rate) * width * height * 3 // 2)  # 定位到要删除的I帧位置
+            f_out.write(bytearray(width * height * 3 // 2))  # 将要删除的I帧用空数据覆盖
 
     # 将处理后的YUV文件重新编码为视频文件
     output_video = f'output_{i}.mp4'
